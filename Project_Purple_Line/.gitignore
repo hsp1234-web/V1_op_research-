@@ -1,0 +1,15 @@
+# Data
+data/
+data/raw/
+data/processed/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+.env
+
+# IDE
+.vscode/
+.idea/
