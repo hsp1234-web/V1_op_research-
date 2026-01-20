@@ -12,18 +12,18 @@ STRATEGY_CONFIG = {
         'NAME': 'Gold (GLD)',
         'TICKER': 'GLD',
         'RISK_FREE_TICKER': '^IRX',
-        'VOLATILITY_TICKER': 'GVZ',  # Gold VIX
+        'VOLATILITY_TICKER': 'GVZ',
         'MA_WINDOW': 200,
         'CAPITAL_RATIO': {'CASH': 0.90, 'OPTION': 0.10},
         'OPTION_MATURITY_YEARS': 1.0,
-        'STRIKE_METHOD': 'ATM',
+        'STRIKE_METHOD': 'ATM', # Can change to 'OTM_5' later
         'START_DATE': '2005-01-01',
     },
     'TLT_STRATEGY': {
         'NAME': 'Treasury 20Y+ (TLT)',
         'TICKER': 'TLT',
         'RISK_FREE_TICKER': '^IRX',
-        'VOLATILITY_TICKER': 'VXTLT', # TLT VIX (Often missing, fallback to HV)
+        'VOLATILITY_TICKER': 'VXTLT',
         'MA_WINDOW': 200,
         'CAPITAL_RATIO': {'CASH': 0.90, 'OPTION': 0.10},
         'OPTION_MATURITY_YEARS': 1.0,
@@ -33,8 +33,8 @@ STRATEGY_CONFIG = {
     'TWII_STRATEGY': {
         'NAME': 'Taiwan Index (^TWII)',
         'TICKER': '^TWII',
-        'RISK_FREE_TICKER': '^IRX', # Using US Rate as proxy for global generic risk-free or cash
-        'VOLATILITY_TICKER': None, # Use Historical Volatility
+        'RISK_FREE_TICKER': '^IRX',
+        'VOLATILITY_TICKER': None,
         'MA_WINDOW': 200,
         'CAPITAL_RATIO': {'CASH': 0.90, 'OPTION': 0.10},
         'OPTION_MATURITY_YEARS': 1.0,

@@ -18,16 +18,20 @@ class TestBacktester(unittest.TestCase):
         # 假設 MA Window = 3
         close_prices = [100, 100, 100, 110, 120, 130, 140, 150, 160, 170]
 
+        # 注意: Backtester 現在需要 'Sigma_Annual' 來計算真實選擇權回報
         self.df = pd.DataFrame({
             'Close': close_prices,
             'RiskFree_Daily': [0.0001] * 10, # 萬分之一日利率
-            'Theoretical_Call_Price': [5.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+            'Sigma_Annual': [0.2] * 10, # 20% 年化波動率
+            'Theoretical_Call_Price': [5.0] * 10 # 舊欄位，Backtester 已不再依賴此欄位，但保留無妨
         }, index=dates)
 
         # 簡單配置
         self.config = {
             'MA_WINDOW': 3,
-            'CAPITAL_RATIO': {'CASH': 0.9, 'OPTION': 0.1}
+            'CAPITAL_RATIO': {'CASH': 0.9, 'OPTION': 0.1},
+            'OPTION_MATURITY_YEARS': 1.0,
+            'STRIKE_METHOD': 'ATM'
         }
 
     def test_initialization(self):
