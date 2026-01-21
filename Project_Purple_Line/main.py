@@ -1,16 +1,61 @@
 import sys
 import os
 import logging
+import argparse
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from datetime import datetime, date
 from config.settings import STRATEGY_CONFIG
 from src.dataloader import DataLoader
 from src.pricing import calculate_call_price
 from src.backtester import Backtester
 
+# 引入 ETL 模組
+from src.fetcher.taifex import TaifexDownloader
+from src.fetcher.parser import TaifexParser
+from src.database import Database
+
 # 設定日誌記錄 (Configure Logging)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def run_taifex_etl(start_date_str, end_date_str):
+    """
+    執行台灣期交所 (TAIFEX) 的 ETL 流程。
+    """
+    logging.info(f"啟動 TAIFEX ETL 任務: {start_date_str} 至 {end_date_str}")
+
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        logging.error("日期格式錯誤，請使用 YYYY-MM-DD")
+        return
+
+    downloader = TaifexDownloader()
+    parser = TaifexParser()
+    db = Database()
+
+    count_futures = 0
+    count_options = 0
+
+    # 下載並處理
+    for trade_date, fut_bytes, opt_bytes in downloader.download_range(start_date, end_date):
+        # 處理期貨
+        if fut_bytes:
+            df_fut = parser.parse_futures(fut_bytes)
+            if not df_fut.empty:
+                db.upsert_futures(df_fut)
+                count_futures += len(df_fut)
+
+        # 處理選擇權
+        if opt_bytes:
+            df_opt = parser.parse_options(opt_bytes)
+            if not df_opt.empty:
+                db.upsert_options(df_opt)
+                count_options += len(df_opt)
+
+    logging.info(f"ETL 任務完成。總計處理期貨筆數: {count_futures}, 選擇權筆數: {count_options}")
 
 def run_strategy(strategy_key):
     """
@@ -53,6 +98,20 @@ def run_strategy(strategy_key):
         return None, name
 
 def main():
+    parser = argparse.ArgumentParser(description="Project Purple Line - 策略回測與資料 ETL")
+
+    # 子命令: ETL
+    parser.add_argument('--etl', action='store_true', help='執行 TAIFEX ETL 資料下載與清洗')
+    parser.add_argument('--start', type=str, default='2024-01-01', help='ETL 開始日期 (YYYY-MM-DD)')
+    parser.add_argument('--end', type=str, default=datetime.today().strftime('%Y-%m-%d'), help='ETL 結束日期 (YYYY-MM-DD)')
+
+    args = parser.parse_args()
+
+    if args.etl:
+        run_taifex_etl(args.start, args.end)
+        return
+
+    # 若無 --etl 參數，則執行預設的回測流程
     logging.info("啟動 Project Purple Line 多策略回測...")
 
     strategies = ['GLD_STRATEGY', 'TLT_STRATEGY', 'TWII_STRATEGY']
